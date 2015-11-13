@@ -163,6 +163,7 @@ let seal verbose seal_data seal_keys mode ip_address ip_netmask ip_gateway
   mkdir tls_dir;
   printf "exec-dir: %s\n%!" exec_dir;
   let seal_data = realpath seal_data in
+  output_static ~dir:exec_dir "https_dispatch.ml";
   output_static ~dir:exec_dir "dispatch.ml";
   output_static ~dir:exec_dir "config.ml";
   let () = match no_tls, seal_keys with

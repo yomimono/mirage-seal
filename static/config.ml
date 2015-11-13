@@ -67,7 +67,7 @@ let with_https = get "HTTPS" ~default:false bool_of_env
 (* main app *)
 
 let https =
-  foreign "Dispatch.HTTPS"
+  foreign "Https_dispatch.HTTPS"
     (console @-> stackv4 @-> kv_ro @-> kv_ro @-> clock @-> job)
 
 let http =
@@ -75,10 +75,16 @@ let http =
     (console @-> stackv4 @-> kv_ro @-> clock @-> job)
 
 let () =
-  let ocamlfind = [
-    "uri"; "tls"; "tls.mirage"; "mirage-http"; "magic-mime"
-  ] in
-  let opam = ["uri"; "tls"; "mirage-http"; "magic-mime"] in
+  let tls_pkgs = match with_https with
+    | true -> ["tls"]
+    | false -> []
+  in
+  let tls_libs = match with_https with
+    | true -> [ "tls"; "tls.mirage" ]
+    | false -> []
+  in
+  let ocamlfind = List.append [ "uri"; "mirage-http"; "magic-mime" ] tls_libs in
+  let opam = List.append ["uri"; "mirage-http"; "magic-mime"] tls_pkgs in
   add_to_ocamlfind_libraries ocamlfind;
   add_to_opam_packages opam;
   register "seal" [
