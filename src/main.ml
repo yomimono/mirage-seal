@@ -57,7 +57,7 @@ let mode =
   let doc =
     Arg.info ~docv:"MODE" ["t";"target"]
       ~doc:"Target platform to compile the unikernel for. Valid values are: \
-            $(i,xen), $(i,unix), $(i,macosx)."
+            $(i,xen), $(i,unix), $(i,macosx), $(i,rumprun)."
   in
   Arg.(value & opt (some string) None & doc)
 
@@ -120,6 +120,7 @@ let mirage_configure ~dir ~mode keys =
     | `Xen -> "-t xen"
     | `Unix -> "-t unix"
     | `MacOSX -> "-t macosx"
+    | `Rumprun -> "-t rumprun"
   in
   let keys =
     List.map (fun (k,v) -> sprintf "SEAL_%s=%s" k v) keys
@@ -135,6 +136,7 @@ let seal verbose seal_data seal_keys mode ip_address ip_netmask ip_gateway
     | false, (None | Some "xen") -> `Xen
     | _, Some "unix" -> `Unix
     | _, Some "macosx" -> `MacOSX
+    | _, Some "rumprun" -> `Rumprun
     | _, Some m -> err "%s is not a valid mirage target" m
   in
   let dhcp =
@@ -186,7 +188,7 @@ let seal verbose seal_data seal_keys mode ip_address ip_netmask ip_gateway
   if mode = `Xen && not (Sys.file_exists "seal.xl") then
     output_static ~dir:(Sys.getcwd ()) "seal.xl";
   let exec_file = match mode with
-    | `Unix | `MacOSX -> exec_dir / "mir-seal"
+    | `Unix | `MacOSX | `Rumprun -> exec_dir / "mir-seal"
     | `Xen -> exec_dir / "mir-seal.xen"
   in
   copy_file exec_file ~dst:(Sys.getcwd ());
@@ -195,6 +197,8 @@ let seal verbose seal_data seal_keys mode ip_address ip_netmask ip_gateway
     printf "\n\nTo run your sealed unikernel, use `sudo ./mir-seal`\n\n%!"
   | `Xen ->
     printf "\n\nTo run your sealed unikernel, use `sudo xl create seal.xl -c`\n\n%!"
+  | `Rumprun ->
+    printf "\n\nTo run your sealed unikernel, use `rumpbake` and `rumprun` on ./mir-seal as appropriate\n\n%!"
 
 let cmd =
   let doc = "Seal a local directory into a Mirage unikernel." in
