@@ -75,8 +75,14 @@ let http =
     (console @-> stackv4 @-> kv_ro @-> clock @-> job)
 
 let () =
+  let uri, re, tls, mirage_http, magic_mime =
+    match get_mode () with
+      `Rumprun -> ("re-rumprun", "uri-rumprun", "tls-rumprun",
+                   "mirage-http-rumprun", "magic-mime-rumprun")
+     | _ -> ("re", "uri", "tls", "mirage-http", "magic-mime")
+  in
   let tls_pkgs = match with_https with
-    | true -> ["tls"]
+    | true -> [tls]
     | false -> []
   in
   let tls_libs = match with_https with
@@ -84,7 +90,7 @@ let () =
     | false -> []
   in
   let ocamlfind = List.append [ "uri"; "mirage-http"; "magic-mime" ] tls_libs in
-  let opam = List.append ["uri"; "mirage-http"; "magic-mime"] tls_pkgs in
+  let opam = List.append [uri; mirage_http; magic_mime] tls_pkgs in
   add_to_ocamlfind_libraries ocamlfind;
   add_to_opam_packages opam;
   register "seal" [
